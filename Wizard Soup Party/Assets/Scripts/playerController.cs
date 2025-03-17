@@ -45,6 +45,11 @@ public class playerController : MonoBehaviour
     private float dashTimeLeft;
     private float lastDashTime;
     
+    //cayote time
+
+    private float coyoteTime = 0.1f;
+    private float cayoteTimCounter = 0f;
+    
     
 
     private void Awake()
