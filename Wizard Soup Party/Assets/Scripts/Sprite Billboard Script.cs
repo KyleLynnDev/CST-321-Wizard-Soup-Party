@@ -19,6 +19,7 @@ public class SpriteBillboardScript : MonoBehaviour
     void Update()
     {
         Vector3 targetPosition =  cam.transform.position;
+        targetPosition.z = targetPosition.z - 0.1f;
         
         Vector3 direction = (transform.position - targetPosition).normalized;
         direction.y = 0;
