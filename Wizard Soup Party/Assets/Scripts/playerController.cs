@@ -11,14 +11,15 @@ public class playerController : MonoBehaviour
     public PlayerInputActions inputActions;
     
     //movement 
-    
+    [Header("Movement Settings")]
     public float moveSpeed = 5.0f;
     public float rotationSpeed = 10.0f;
+        
     private Vector2 moveInput;
     private Vector3 moveDirection;
     
     //jumping
-
+    [Header("Jump Settings")]
     public float jumpHeight = 2.5f;
     public float gravity = -9.81f;
     public float groundCheckDistance = 0.2f;
@@ -31,7 +32,18 @@ public class playerController : MonoBehaviour
     public bool isGliding = false;
     public float glideGravity = -2f;
     public float maxGlideTime = 2f;
+    
     private float currentGlideTime; 
+    
+    //dashing
+    [Header("Dashing Settings")]
+    public float dashSpeed = 6f;
+    public float dashDuration = 0.05f;
+    public float dashCooldown = 1f;
+    
+    private bool isDashing = false;
+    private float dashTimeLeft;
+    private float lastDashTime;
     
     
 
@@ -51,6 +63,9 @@ public class playerController : MonoBehaviour
             // Glide input handling
             inputActions.Player.Glide.performed += ctx => StartGlide();
             inputActions.Player.Glide.canceled += ctx => StopGlide();
+            
+            // Dash input handling
+            inputActions.Player.Dash.performed += ctx => StartDash();
     }
 
     private void OnDisable()
@@ -62,8 +77,15 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ApplyGravity();
-        MoveCharacter(); 
+        if (isDashing)
+        {
+            DashMovement();
+        }
+        else
+        {
+            ApplyGravity();
+            MoveCharacter();
+        }
     }
 
     private void ApplyGravity()
@@ -82,19 +104,7 @@ public class playerController : MonoBehaviour
         
         // Debug: Visualize the Raycast
         Debug.DrawRay(rayOrigin, Vector3.down * raycastDistance, isGrounded ? Color.green : Color.red);
-
         
-        
-        
-        
-        // if (isGrounded && velocity.y < 0)
-        // {
-        //     velocity.y = -2f; // Keep player on ground
-        // }
-        // else
-        // {
-        //     velocity.y += gravity * Time.deltaTime;
-        // }
 
         // Only reset velocity when landing, to avoid interfering with jumps
         if (isGrounded)
@@ -120,10 +130,40 @@ public class playerController : MonoBehaviour
             velocity.y += gravity * Time.deltaTime;
         }
         
-        
-        
         characterController.Move(velocity * Time.deltaTime);
     }
+
+    
+    
+    private void StartDash()
+    {
+        if (!isDashing && Time.time >= lastDashTime + dashCooldown) // Only dash if not on cooldown
+        {
+            isDashing = true;
+            dashTimeLeft = dashDuration;
+            lastDashTime = Time.time;
+
+            // Give initial burst of speed in the movement direction
+            velocity = moveDirection * dashSpeed;
+        }
+    }
+
+
+    private void DashMovement()
+    {
+        if (dashTimeLeft > 0)
+        {
+            characterController.Move(velocity * Time.deltaTime);
+            dashTimeLeft -= Time.deltaTime;
+        }
+        else
+        {
+            isDashing = false;
+            velocity = Vector3.zero;
+            //velocity = Vector3.Lerp(velocity, Vector3.zero, Time.deltaTime * 20f);
+        }
+    }
+
 
     private void StartGlide()
     {
@@ -135,11 +175,15 @@ public class playerController : MonoBehaviour
         }
     }
 
+    
+    
     private void StopGlide()
     {
         isGliding = false;
     }
 
+    
+    
     private void Jump()
     {
         if (isGrounded)
@@ -149,6 +193,8 @@ public class playerController : MonoBehaviour
         }
     }
 
+    
+    
     private void CutJump()
     {
         if (velocity.y > 0) // Only stop jump if still moving upward
@@ -156,6 +202,8 @@ public class playerController : MonoBehaviour
             velocity.y *= 0.5f; // Reduces upward velocity for a shorter jump
         }
     }
+    
+    
     
     private void MoveCharacter()
     {
@@ -167,7 +215,6 @@ public class playerController : MonoBehaviour
         cameraRight.y = 0f;
         cameraRight.Normalize();
         
-        
         moveDirection = (cameraRight * moveInput.x + cameraForward * moveInput.y).normalized;
 
         if (moveDirection.magnitude >= 0.1f)
@@ -178,4 +225,6 @@ public class playerController : MonoBehaviour
             characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
         }
     }
+    
+    
 }
