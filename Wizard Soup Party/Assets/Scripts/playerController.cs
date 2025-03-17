@@ -40,7 +40,16 @@ public class playerController : MonoBehaviour
 
     private void MoveCharacter()
     {
-        moveDirection = new Vector3(moveInput.x,0, moveInput.y).normalized;
+        Vector3 cameraForward = Camera.main.transform.forward;
+        cameraForward.y = 0f;
+        cameraForward.Normalize();
+
+        Vector3 cameraRight = Camera.main.transform.right;
+        cameraRight.y = 0f;
+        cameraRight.Normalize();
+        
+        
+        moveDirection = (cameraRight * moveInput.x + cameraForward * moveInput.y).normalized;
 
         if (moveDirection.magnitude >= 0.1f)
         {
