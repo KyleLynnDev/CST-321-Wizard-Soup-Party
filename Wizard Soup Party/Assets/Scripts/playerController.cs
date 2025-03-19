@@ -48,7 +48,7 @@ public class playerController : MonoBehaviour
     //cayote time
 
     private float coyoteTime = 0.1f;
-    private float cayoteTimCounter = 0f;
+    private float coyoteTimeCounter = 0f;
     
     
 
@@ -114,25 +114,32 @@ public class playerController : MonoBehaviour
         // Only reset velocity when landing, to avoid interfering with jumps
         if (isGrounded)
         {
-            if (!wasGrounded) // This ensures we don't reset mid-air
+            coyoteTimeCounter = coyoteTime; // Reset coyote time
+            if (!wasGrounded) 
             {
                 velocity.y = -2f; // Keep player on ground only when landing
             }
             isGliding = false; // Stop gliding when landing
         }
+        else
+        {
+            coyoteTimeCounter -= Time.deltaTime; // Reduce coyote time if in the air
+        }
+
+        // If jumping, prevent gravity from instantly applying full force
+        if (velocity.y > 0) 
+        {
+            velocity.y += (gravity * 0.5f) * Time.deltaTime; // Reduce gravity effect when going up
+        }
         else if (isGliding)
         {
-            // Apply slow gravity while gliding
             velocity.y = Mathf.Lerp(velocity.y, glideGravity, Time.deltaTime * 5f);
-
-            // Reduce glide time
             currentGlideTime -= Time.deltaTime;
-            if (currentGlideTime <= 0) StopGlide(); // Stop gliding when out of time
+            if (currentGlideTime <= 0) StopGlide();
         }
         else
         {
-            // Apply normal gravity while falling
-            velocity.y += gravity * Time.deltaTime;
+            velocity.y += gravity * Time.deltaTime; // Apply normal gravity
         }
         
         characterController.Move(velocity * Time.deltaTime);
@@ -191,10 +198,11 @@ public class playerController : MonoBehaviour
     
     private void Jump()
     {
-        if (isGrounded)
+        if (isGrounded || coyoteTimeCounter > 0f)
         {
             //physics based jump calculation:
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            coyoteTimeCounter = 0f; // Reset coyote time after jumping
         }
     }
 
