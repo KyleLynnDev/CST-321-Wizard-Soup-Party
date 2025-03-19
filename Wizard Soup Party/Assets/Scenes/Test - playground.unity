@@ -257,6 +257,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1179,6 +1183,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1763,6 +1771,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1837,6 +1849,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1911,6 +1927,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2294,6 +2314,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4492128679581659223, guid: fae78270630cde44da25be105c868e81, type: 3}
   m_PrefabInstance: {fileID: 815257759}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &816640975 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3475177618616297406, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+  m_PrefabInstance: {fileID: 8062991534637969375}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &835611518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2358,6 +2383,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2502,7 +2531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 839817d0b3083e245959730c85b05ae8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cam: {fileID: 716162980}
+  billboardTarget: {fileID: 816640975}
 --- !u!1 &1005776964
 GameObject:
   m_ObjectHideFlags: 0
@@ -2687,6 +2716,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2761,6 +2794,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2867,6 +2904,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3385,6 +3426,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3482,8 +3527,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1487063397}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.45758158, y: -0.000000015197706, z: 0.000000007821012, w: 0.88916767}
-  m_LocalPosition: {x: 0, y: 7.5, z: -5}
+  m_LocalRotation: {x: 0.42415544, y: 0.000000021455502, z: -0.000000010049223, w: 0.9055894}
+  m_LocalPosition: {x: 0, y: 6.5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4662,6 +4707,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4919,6 +4968,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5137,6 +5190,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 716162980}
+    - target: {fileID: 6906571415064623057, guid: fae78270630cde44da25be105c868e81, type: 3}
+      propertyPath: billboardTarget
+      value: 
+      objectReference: {fileID: 816640975}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5165,7 +5222,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.5
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5173,19 +5230,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8891677
+      value: 0.9055894
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.45758158
+      value: 0.42415544
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000015197706
+      value: 0.000000021455504
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000007821011
+      value: -0.000000010049222
       objectReference: {fileID: 0}
     - target: {fileID: 1645418054692035346, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -5199,9 +5256,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3475177618616297406, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3475177618616297406, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.73
+      objectReference: {fileID: 0}
+    - target: {fileID: 3475177618616297406, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.66
+      objectReference: {fileID: 0}
+    - target: {fileID: 3878439883778459493, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+      propertyPath: FollowOffset.y
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3878439883778459493, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
+      propertyPath: FollowOffset.z
+      value: -5
+      objectReference: {fileID: 0}
     - target: {fileID: 3878439883778459493, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: TrackerSettings.PositionDamping.x
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3878439883778459493, guid: ed8da6ba37aace04db9b0fcc988925cc, type: 3}
       propertyPath: TrackerSettings.PositionDamping.y
