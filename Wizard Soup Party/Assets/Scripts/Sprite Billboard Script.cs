@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class SpriteBillboardScript : MonoBehaviour
 {
-
-    public CinemachineCamera cam;
+    public Transform billboardTarget; 
+    //public CinemachineCamera cam;
     private SpriteRenderer SR;
     
     private void Start()
@@ -18,7 +18,11 @@ public class SpriteBillboardScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 targetPosition =  cam.transform.position;
+        if (billboardTarget == null) return; // Exit if no target is assigned
+        // Get the position of the target behind the camera
+        Vector3 targetPosition = billboardTarget.position;
+        
+        //Vector3 targetPosition =  cam.transform.position;
         targetPosition.z = targetPosition.z - 0.1f;
         
         Vector3 direction = (transform.position - targetPosition).normalized;
