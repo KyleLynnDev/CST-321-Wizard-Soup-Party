@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class playerController : MonoBehaviour
 {
@@ -37,20 +38,35 @@ public class playerController : MonoBehaviour
     
     //dashing
     [Header("Dashing Settings")]
-    public float dashSpeed = 6f;
-    public float dashDuration = 0.05f;
+    public float dashSpeed = 12f;
+    public float dashDuration = 1f;
     public float dashCooldown = 1f;
-    
     private bool isDashing = false;
     private float dashTimeLeft;
     private float lastDashTime;
     
-    //cayote time
+    //coyote time
 
     private float coyoteTime = 0.1f;
     private float coyoteTimeCounter = 0f;
     
-    
+
+    [Header("Interaction Settings")]
+
+
+    private GameObject nearbyPickup;
+    private bool canInteract = false;
+
+    public GameObject interactionPrompt;
+
+    private NPCInteraction nearbyNPC;
+
+    public GameObject dialoguePanel;
+    public TextMeshProUGUI dialogueTextUI;
+
+    private bool inDialogue = false;
+    private int currentDialogueIndex = 0;
+    private string[] currentDialogue;
 
     private void Awake()
     {
@@ -64,6 +80,7 @@ public class playerController : MonoBehaviour
             inputActions.Player.Move.canceled += ctx => moveInput = Vector2.zero;
             inputActions.Player.Jump.performed += ctx => Jump();
             inputActions.Player.Jump.canceled += ctx => CutJump();
+            inputActions.Player.Interact.performed += ctx => TryInteract();
             
             // Glide input handling
             inputActions.Player.Glide.performed += ctx => StartGlide();
@@ -75,6 +92,7 @@ public class playerController : MonoBehaviour
 
     private void OnDisable()
     {
+        inputActions.Player.Interact.performed -= ctx => TryInteract();
         inputActions.Player.Disable();
     }
     
@@ -82,6 +100,7 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (isDashing)
         {
             DashMovement();
@@ -156,13 +175,16 @@ public class playerController : MonoBehaviour
             lastDashTime = Time.time;
 
             // Give initial burst of speed in the movement direction
-            velocity = moveDirection * dashSpeed;
+            Vector3 dashDirection = moveDirection.magnitude > 0.1f ? moveDirection : transform.forward;
+            velocity = new Vector3(dashDirection.x, 0, dashDirection.z) * dashSpeed;
+            Debug.Log("Triggered");
         }
     }
 
 
     private void DashMovement()
     {
+        Debug.Log("Dashing...");
         if (dashTimeLeft > 0)
         {
             characterController.Move(velocity * Time.deltaTime);
@@ -240,4 +262,122 @@ public class playerController : MonoBehaviour
     }
     
     
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Mushroom"))
+        {
+            nearbyPickup = other.gameObject;
+            canInteract = true;
+            if (interactionPrompt != null){
+                interactionPrompt.SetActive(true); 
+            }
+        }
+
+         if (other.CompareTag("NPC"))
+        {
+            nearbyNPC = other.GetComponent<NPCInteraction>();
+        }
+
+
+    }
+
+
+    private void OnTriggerExit(Collider other)
+{
+    if (other.CompareTag("Mushroom"))
+    {
+        if (other.gameObject == nearbyPickup)
+        {
+            nearbyPickup = null;
+            canInteract = false;
+            if (interactionPrompt != null){
+                interactionPrompt.SetActive(false); 
+            }
+        }
+    }
+
+    if (other.CompareTag("NPC"))
+    {
+        nearbyNPC = null;
+    }
+
+
+}
+
+private void TryInteract()
+{
+    if (inDialogue)
+    {
+        AdvanceDialogue(); // Progress dialogue if already talking
+    }
+
+    else if (canInteract && nearbyPickup != null)
+    {
+        CollectMushroom(nearbyPickup);
+    }
+    
+    else if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
+    {
+        StartDialogue(nearbyNPC.dialogueLines.ToArray());
+    }
+}
+
+
+
+
+    private void CollectMushroom(GameObject mushroom)
+    {
+    // Optional: play sound, spawn effect, etc.
+    jumpHeight += 0.5f; // Upgrade logic: boost jump height
+
+
+    if (interactionPrompt != null)
+        interactionPrompt.SetActive(false); 
+        
+
+
+    Destroy(mushroom);  // Remove mushroom from the scene
+
+    Debug.Log("Mushroom collected! Jump upgraded.");
+    }
+
+    private void ShowDialogue(string text)
+    {
+        dialogueTextUI.text = text;
+        dialoguePanel.SetActive(true);
+    }
+
+
+
+
+    private void StartDialogue(string[] lines)
+    {
+        currentDialogue = lines;
+        currentDialogueIndex = 0;
+        inDialogue = true;
+        ShowDialogue(currentDialogue[currentDialogueIndex]);
+    }
+
+    private void AdvanceDialogue()
+    {
+        currentDialogueIndex++;
+
+        if (currentDialogueIndex < currentDialogue.Length)
+        {
+            ShowDialogue(currentDialogue[currentDialogueIndex]);
+        }
+        else
+        {
+            EndDialogue();
+        }
+    }
+
+    private void EndDialogue()
+    {
+        inDialogue = false;
+        dialoguePanel.SetActive(false);
+    }
+
+
+
 }
