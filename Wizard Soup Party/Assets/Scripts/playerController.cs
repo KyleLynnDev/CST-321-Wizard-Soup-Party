@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class playerController : MonoBehaviour
 {
@@ -44,15 +45,28 @@ public class playerController : MonoBehaviour
     private float dashTimeLeft;
     private float lastDashTime;
     
-    //cayote time
+    //coyote time
 
     private float coyoteTime = 0.1f;
     private float coyoteTimeCounter = 0f;
     
+
+    [Header("Interaction Settings")]
+
+
     private GameObject nearbyPickup;
     private bool canInteract = false;
 
     public GameObject interactionPrompt;
+
+    private NPCInteraction nearbyNPC;
+
+    public GameObject dialoguePanel;
+    public TextMeshProUGUI dialogueTextUI;
+
+    private bool inDialogue = false;
+    private int currentDialogueIndex = 0;
+    private string[] currentDialogue;
 
     private void Awake()
     {
@@ -258,6 +272,13 @@ public class playerController : MonoBehaviour
                 interactionPrompt.SetActive(true); 
             }
         }
+
+         if (other.CompareTag("NPC"))
+        {
+            nearbyNPC = other.GetComponent<NPCInteraction>();
+        }
+
+
     }
 
 
@@ -274,15 +295,35 @@ public class playerController : MonoBehaviour
             }
         }
     }
+
+    if (other.CompareTag("NPC"))
+    {
+        nearbyNPC = null;
+    }
+
+
 }
 
 private void TryInteract()
 {
-    if (canInteract && nearbyPickup != null)
+    if (inDialogue)
+    {
+        AdvanceDialogue(); // Progress dialogue if already talking
+    }
+
+    else if (canInteract && nearbyPickup != null)
     {
         CollectMushroom(nearbyPickup);
     }
+    
+    else if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
+    {
+        StartDialogue(nearbyNPC.dialogueLines.ToArray());
+    }
 }
+
+
+
 
     private void CollectMushroom(GameObject mushroom)
     {
@@ -300,6 +341,42 @@ private void TryInteract()
     Debug.Log("Mushroom collected! Jump upgraded.");
     }
 
+    private void ShowDialogue(string text)
+    {
+        dialogueTextUI.text = text;
+        dialoguePanel.SetActive(true);
+    }
+
+
+
+
+    private void StartDialogue(string[] lines)
+    {
+        currentDialogue = lines;
+        currentDialogueIndex = 0;
+        inDialogue = true;
+        ShowDialogue(currentDialogue[currentDialogueIndex]);
+    }
+
+    private void AdvanceDialogue()
+    {
+        currentDialogueIndex++;
+
+        if (currentDialogueIndex < currentDialogue.Length)
+        {
+            ShowDialogue(currentDialogue[currentDialogueIndex]);
+        }
+        else
+        {
+            EndDialogue();
+        }
+    }
+
+    private void EndDialogue()
+    {
+        inDialogue = false;
+        dialoguePanel.SetActive(false);
+    }
 
 
 
