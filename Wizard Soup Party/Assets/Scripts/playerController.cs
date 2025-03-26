@@ -37,8 +37,8 @@ public class playerController : MonoBehaviour
     
     //dashing
     [Header("Dashing Settings")]
-    public float dashSpeed = 6f;
-    public float dashDuration = 0.05f;
+    public float dashSpeed = 12f;
+    public float dashDuration = 0.2f;
     public float dashCooldown = 1f;
     
     private bool isDashing = false;
@@ -156,13 +156,16 @@ public class playerController : MonoBehaviour
             lastDashTime = Time.time;
 
             // Give initial burst of speed in the movement direction
-            velocity = moveDirection * dashSpeed;
+            Vector3 dashDirection = moveDirection.magnitude > 0.1f ? moveDirection : transform.forward;
+            velocity = new Vector3(dashDirection.x, 0, dashDirection.z) * dashSpeed;
+            Debug.Log("Triggered");
         }
     }
 
 
     private void DashMovement()
     {
+        Debug.Log("Dashing...");
         if (dashTimeLeft > 0)
         {
             characterController.Move(velocity * Time.deltaTime);
