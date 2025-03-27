@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class playerController : MonoBehaviour
 {
@@ -81,6 +82,7 @@ public class playerController : MonoBehaviour
             inputActions.Player.Jump.performed += ctx => Jump();
             inputActions.Player.Jump.canceled += ctx => CutJump();
             inputActions.Player.Interact.performed += ctx => TryInteract();
+            inputActions.Player.Reset.performed += ctx => ResetScene();
             
             // Glide input handling
             inputActions.Player.Glide.performed += ctx => StartGlide();
@@ -92,6 +94,7 @@ public class playerController : MonoBehaviour
 
     private void OnDisable()
     {
+        inputActions.Player.Reset.performed -= ctx => ResetScene();
         inputActions.Player.Interact.performed -= ctx => TryInteract();
         inputActions.Player.Disable();
     }
@@ -101,6 +104,7 @@ public class playerController : MonoBehaviour
     void Update()
     {
 
+    
         if (isDashing)
         {
             DashMovement();
@@ -376,6 +380,12 @@ private void TryInteract()
     {
         inDialogue = false;
         dialoguePanel.SetActive(false);
+    }
+
+
+    private void ResetScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
 
