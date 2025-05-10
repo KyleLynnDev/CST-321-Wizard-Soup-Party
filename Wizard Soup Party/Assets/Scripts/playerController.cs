@@ -69,9 +69,19 @@ public class playerController : MonoBehaviour
     private int currentDialogueIndex = 0;
     private string[] currentDialogue;
 
+
+    //for sprite animation
+    private Animator animator; 
+
+    [SerializeField] private Transform spriteTransform; 
+
+    
+
+
     private void Awake()
     {
         inputActions = new PlayerInputActions();
+        animator = GetComponentInChildren<Animator>(); // the animator is in visual, a child of player
     }
 
     private void OnEnable()
@@ -114,6 +124,8 @@ public class playerController : MonoBehaviour
             ApplyGravity();
             MoveCharacter();
         }
+
+        UpdateAnimationStates(); 
     }
 
     private void ApplyGravity()
@@ -174,6 +186,7 @@ public class playerController : MonoBehaviour
     {
         if (!isDashing && Time.time >= lastDashTime + dashCooldown) // Only dash if not on cooldown
         {
+            animator.SetBool("isDashing", true);
             isDashing = true;
             dashTimeLeft = dashDuration;
             lastDashTime = Time.time;
@@ -196,6 +209,8 @@ public class playerController : MonoBehaviour
         }
         else
         {
+            isDashing = false;
+            animator.SetBool("isDashing", false);
             isDashing = false;
             velocity = Vector3.zero;
             //velocity = Vector3.Lerp(velocity, Vector3.zero, Time.deltaTime * 20f);
@@ -313,17 +328,31 @@ private void TryInteract()
     if (inDialogue)
     {
         AdvanceDialogue(); // Progress dialogue if already talking
+        return;
     }
 
-    else if (canInteract && nearbyPickup != null)
+    if (canInteract && nearbyPickup != null)
     {
-        CollectMushroom(nearbyPickup);
+        MushroomPickup pickup = nearbyPickup.GetComponent<MushroomPickup>();
+        if (pickup != null)
+        {
+            pickup.Collect(this);
+        }
+
+        nearbyPickup = null;
+        canInteract = false;
+        if (interactionPrompt != null)
+            interactionPrompt.SetActive(false);
+
+        return;
     }
-    
-    else if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
+
+    if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
     {
         StartDialogue(nearbyNPC.dialogueLines.ToArray());
     }
+
+
 }
 
 
@@ -386,6 +415,66 @@ private void TryInteract()
     private void ResetScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+
+    private void UpdateAnimationStates(){
+   
+    Vector3 scale = spriteTransform.localScale;
+
+        if (moveInput.x > 0.1f)
+            {
+                scale.x = Mathf.Abs(scale.x); // face right
+            }
+        else if (moveInput.x < -0.1f)
+            {
+                scale.x = -Mathf.Abs(scale.x); // face left
+            }
+
+        spriteTransform.localScale = scale;
+
+        // Check if player is moving
+        bool isMoving = moveInput.magnitude > 0.1f;
+
+        // Determine vertical motion states
+        bool isJumpingUp = !isGrounded && velocity.y > 0.1f;
+        bool isFalling = !isGrounded && velocity.y < -0.1f;
+
+        // Allow walk/idle only when grounded and not in special states
+        bool groundedMovementAllowed = isGrounded && !isJumpingUp && !isGliding && !isDashing;
+
+        // Set animation booleans
+        animator.SetBool("isJumping", isJumpingUp);
+        animator.SetBool("isFalling", isFalling && !isGliding && !isDashing);
+        animator.SetBool("isGliding", isGliding);
+        animator.SetBool("isDashing", isDashing);
+        animator.SetBool("isWalking", groundedMovementAllowed && isMoving);
+
+
+    }
+
+
+
+
+    public void ModifyJumpHeight(float amount)
+    {
+        jumpHeight = Mathf.Max(0.5f, jumpHeight + amount);
+    }
+
+
+
+    public void ModifyDashSpeed(float amount)
+    {
+        dashSpeed = Mathf.Max(1f, dashSpeed + amount);
+    }
+
+
+    public void ModifyGlideControl(float amount){
+        maxGlideTime += amount; 
+    }
+
+    public void ModifyClimbStrength(float amount){
+        
     }
 
 
