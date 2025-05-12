@@ -20,7 +20,7 @@ public class BlobShadow : MonoBehaviour
         //Cast a ray straight downwards, reads back where it lands (this is optional but reccomended)
         if(Physics.Raycast(downRay, out hit))
         {
-            print(hit.transform);
+            //print(hit.transform);
         }
     }
 }

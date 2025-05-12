@@ -75,8 +75,15 @@ public class playerController : MonoBehaviour
 
     [SerializeField] private Transform spriteTransform; 
 
-    
 
+    public bool isPlayerInRange = false;
+    public string NextScene = null; 
+
+    private bool inputPaused = false;
+    private float inputPauseTimer = 0f;
+    private const float inputPauseDuration = 0.15f; // Adjust as needed
+    
+    private bool suppressDashDueToBookInput = false;
 
     private void Awake()
     {
@@ -93,6 +100,8 @@ public class playerController : MonoBehaviour
             inputActions.Player.Jump.canceled += ctx => CutJump();
             inputActions.Player.Interact.performed += ctx => TryInteract();
             inputActions.Player.Reset.performed += ctx => ResetScene();
+            inputActions.Player.OpenBook.performed += OnOpenBook;
+            inputActions.Player.Interact.performed += OnEnterScene;
             
             // Glide input handling
             inputActions.Player.Glide.performed += ctx => StartGlide();
@@ -104,6 +113,8 @@ public class playerController : MonoBehaviour
 
     private void OnDisable()
     {
+        inputActions.Player.Interact.performed -= OnEnterScene;
+        inputActions.Player.OpenBook.performed -= OnOpenBook;
         inputActions.Player.Reset.performed -= ctx => ResetScene();
         inputActions.Player.Interact.performed -= ctx => TryInteract();
         inputActions.Player.Disable();
@@ -113,6 +124,24 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (inputPaused)
+        {
+        inputPauseTimer -= Time.deltaTime;
+            if (inputPauseTimer <= 0f)
+            {
+                inputPaused = false;
+            }
+
+        return; // Skip movement/dash input while paused
+        }
+
+        if (UIManager.Instance.IsBookOpen())
+        {
+            // Skip movement logic
+            return;
+        }
+
 
     
         if (isDashing)
@@ -184,6 +213,10 @@ public class playerController : MonoBehaviour
     
     private void StartDash()
     {
+        if (UIManager.Instance.ConsumeDashSuppression()) return;
+
+        if (moveInput.magnitude < 0.1f) return;
+
         if (!isDashing && Time.time >= lastDashTime + dashCooldown) // Only dash if not on cooldown
         {
             animator.SetBool("isDashing", true);
@@ -194,7 +227,7 @@ public class playerController : MonoBehaviour
             // Give initial burst of speed in the movement direction
             Vector3 dashDirection = moveDirection.magnitude > 0.1f ? moveDirection : transform.forward;
             velocity = new Vector3(dashDirection.x, 0, dashDirection.z) * dashSpeed;
-            Debug.Log("Triggered");
+            //Debug.Log("Triggered");
         }
     }
 
@@ -475,6 +508,27 @@ private void TryInteract()
 
     public void ModifyClimbStrength(float amount){
         
+    }
+
+
+    private void OnOpenBook(InputAction.CallbackContext context)
+    {
+        UIManager.Instance?.ToggleMushroomBook();
+
+        if (!UIManager.Instance.IsBookOpen()) // if just closed
+        {
+            inputPaused = true;
+            inputPauseTimer = inputPauseDuration;
+        }
+    } 
+
+    private void OnEnterScene(InputAction.CallbackContext context)
+    {
+        if (isPlayerInRange)
+        {
+            UIManager.Instance.HideInteractionPrompt();
+            SceneManager.LoadScene(NextScene);
+        }
     }
 
 

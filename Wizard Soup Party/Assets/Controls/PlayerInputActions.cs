@@ -153,6 +153,33 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""OpenBook"",
+                    ""type"": ""Button"",
+                    ""id"": ""b9060ce7-94fe-4438-bebd-33876df80bea"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""FlipLeft"",
+                    ""type"": ""Button"",
+                    ""id"": ""a178ee6b-9936-4e72-9a66-f4d55a58f06a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""FlipRight"",
+                    ""type"": ""Button"",
+                    ""id"": ""5e616167-13d3-4edb-92e8-dee4e2331cbd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -397,6 +424,72 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Reset"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""176e29db-f3c1-4a28-8678-abfae7dd1761"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""OpenBook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b23a4aeb-7f1c-4718-8253-6b496a4f75ec"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""OpenBook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""25b33233-0da1-4108-8eb0-3b605cfae62c"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""535e3dd4-e05f-4133-875a-c10110a98178"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""625e2124-9f24-4403-a826-81ed30149b33"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b1b8f047-1fdd-4c85-8cb3-58c59efec30a"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -412,6 +505,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_Reset = m_Player.FindAction("Reset", throwIfNotFound: true);
+        m_Player_OpenBook = m_Player.FindAction("OpenBook", throwIfNotFound: true);
+        m_Player_FlipLeft = m_Player.FindAction("FlipLeft", throwIfNotFound: true);
+        m_Player_FlipRight = m_Player.FindAction("FlipRight", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -499,6 +595,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Dash;
     private readonly InputAction m_Player_Interact;
     private readonly InputAction m_Player_Reset;
+    private readonly InputAction m_Player_OpenBook;
+    private readonly InputAction m_Player_FlipLeft;
+    private readonly InputAction m_Player_FlipRight;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -538,6 +637,18 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Reset".
         /// </summary>
         public InputAction @Reset => m_Wrapper.m_Player_Reset;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/OpenBook".
+        /// </summary>
+        public InputAction @OpenBook => m_Wrapper.m_Player_OpenBook;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/FlipLeft".
+        /// </summary>
+        public InputAction @FlipLeft => m_Wrapper.m_Player_FlipLeft;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/FlipRight".
+        /// </summary>
+        public InputAction @FlipRight => m_Wrapper.m_Player_FlipRight;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -585,6 +696,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Reset.started += instance.OnReset;
             @Reset.performed += instance.OnReset;
             @Reset.canceled += instance.OnReset;
+            @OpenBook.started += instance.OnOpenBook;
+            @OpenBook.performed += instance.OnOpenBook;
+            @OpenBook.canceled += instance.OnOpenBook;
+            @FlipLeft.started += instance.OnFlipLeft;
+            @FlipLeft.performed += instance.OnFlipLeft;
+            @FlipLeft.canceled += instance.OnFlipLeft;
+            @FlipRight.started += instance.OnFlipRight;
+            @FlipRight.performed += instance.OnFlipRight;
+            @FlipRight.canceled += instance.OnFlipRight;
         }
 
         /// <summary>
@@ -617,6 +737,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Reset.started -= instance.OnReset;
             @Reset.performed -= instance.OnReset;
             @Reset.canceled -= instance.OnReset;
+            @OpenBook.started -= instance.OnOpenBook;
+            @OpenBook.performed -= instance.OnOpenBook;
+            @OpenBook.canceled -= instance.OnOpenBook;
+            @FlipLeft.started -= instance.OnFlipLeft;
+            @FlipLeft.performed -= instance.OnFlipLeft;
+            @FlipLeft.canceled -= instance.OnFlipLeft;
+            @FlipRight.started -= instance.OnFlipRight;
+            @FlipRight.performed -= instance.OnFlipRight;
+            @FlipRight.canceled -= instance.OnFlipRight;
         }
 
         /// <summary>
@@ -706,5 +835,26 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnReset(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "OpenBook" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnOpenBook(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "FlipLeft" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFlipLeft(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "FlipRight" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFlipRight(InputAction.CallbackContext context);
     }
 }
