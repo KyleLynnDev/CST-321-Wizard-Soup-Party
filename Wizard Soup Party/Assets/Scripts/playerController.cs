@@ -85,10 +85,17 @@ public class playerController : MonoBehaviour
     
     private bool suppressDashDueToBookInput = false;
 
+    [SerializeField] private int maxMana = 3;
+    private int currentMana;
+
+    [SerializeField] private float manaRegenDelay = 0.5f;
+    private float manaRegenTimer = 0f;
+
     private void Awake()
     {
         inputActions = new PlayerInputActions();
         animator = GetComponentInChildren<Animator>(); // the animator is in visual, a child of player
+        currentMana = maxMana;
     }
 
     private void OnEnable()
@@ -124,6 +131,8 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log($"Mana: {currentMana}/{maxMana}");
 
         if (inputPaused)
         {
@@ -175,6 +184,15 @@ public class playerController : MonoBehaviour
         Debug.DrawRay(rayOrigin, Vector3.down * raycastDistance, isGrounded ? Color.green : Color.red);
         
 
+        //restore mana
+        if (isGrounded && currentMana < maxMana){
+            currentMana = maxMana;
+        // TODO: play VFX or sparkle sound
+        }
+        
+
+
+
         // Only reset velocity when landing, to avoid interfering with jumps
         if (isGrounded)
         {
@@ -198,8 +216,20 @@ public class playerController : MonoBehaviour
         else if (isGliding)
         {
             velocity.y = Mathf.Lerp(velocity.y, glideGravity, Time.deltaTime * 5f);
+
             currentGlideTime -= Time.deltaTime;
-            if (currentGlideTime <= 0) StopGlide();
+            if (currentGlideTime <= 0) {
+                if (currentMana > 0)
+                {
+                    currentMana--;
+                    currentGlideTime = maxGlideTime; // recharge glide time
+                }
+                else
+                {
+                    StopGlide();
+                }
+            }
+
         }
         else
         {
@@ -217,8 +247,11 @@ public class playerController : MonoBehaviour
 
         if (moveInput.magnitude < 0.1f) return;
 
-        if (!isDashing && Time.time >= lastDashTime + dashCooldown) // Only dash if not on cooldown
+        if (!isDashing && Time.time >= lastDashTime + dashCooldown && currentMana > 0) // Only dash if not on cooldown & has mana
         {
+            currentMana--;
+            manaRegenTimer = manaRegenDelay;
+
             animator.SetBool("isDashing", true);
             isDashing = true;
             dashTimeLeft = dashDuration;
@@ -253,7 +286,7 @@ public class playerController : MonoBehaviour
 
     private void StartGlide()
     {
-        if (!isGrounded) // Only allow gliding if player is airborne
+        if (!isGrounded && currentMana > 0) // Only allow gliding if player is airborne
         {
             isGliding = true;
             currentGlideTime = maxGlideTime; // Reset glide time
@@ -272,11 +305,13 @@ public class playerController : MonoBehaviour
     
     private void Jump()
     {
-        if (isGrounded || coyoteTimeCounter > 0f)
+        if ((isGrounded || coyoteTimeCounter > 0f) && currentMana > 0)
         {
-            //physics based jump calculation:
+            currentMana--;
+            manaRegenTimer = manaRegenDelay;
+
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            coyoteTimeCounter = 0f; // Reset coyote time after jumping
+            coyoteTimeCounter = 0f;
         }
     }
 
