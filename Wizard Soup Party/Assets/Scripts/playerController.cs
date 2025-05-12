@@ -69,9 +69,33 @@ public class playerController : MonoBehaviour
     private int currentDialogueIndex = 0;
     private string[] currentDialogue;
 
+
+    //for sprite animation
+    private Animator animator; 
+
+    [SerializeField] private Transform spriteTransform; 
+
+
+    public bool isPlayerInRange = false;
+    public string NextScene = null; 
+
+    private bool inputPaused = false;
+    private float inputPauseTimer = 0f;
+    private const float inputPauseDuration = 0.15f; // Adjust as needed
+    
+    private bool suppressDashDueToBookInput = false;
+
+    [SerializeField] private int maxMana = 3;
+    private int currentMana;
+
+    [SerializeField] private float manaRegenDelay = 0.5f;
+    private float manaRegenTimer = 0f;
+
     private void Awake()
     {
         inputActions = new PlayerInputActions();
+        animator = GetComponentInChildren<Animator>(); // the animator is in visual, a child of player
+        currentMana = maxMana;
     }
 
     private void OnEnable()
@@ -83,6 +107,8 @@ public class playerController : MonoBehaviour
             inputActions.Player.Jump.canceled += ctx => CutJump();
             inputActions.Player.Interact.performed += ctx => TryInteract();
             inputActions.Player.Reset.performed += ctx => ResetScene();
+            inputActions.Player.OpenBook.performed += OnOpenBook;
+            inputActions.Player.Interact.performed += OnEnterScene;
             
             // Glide input handling
             inputActions.Player.Glide.performed += ctx => StartGlide();
@@ -94,6 +120,8 @@ public class playerController : MonoBehaviour
 
     private void OnDisable()
     {
+        inputActions.Player.Interact.performed -= OnEnterScene;
+        inputActions.Player.OpenBook.performed -= OnOpenBook;
         inputActions.Player.Reset.performed -= ctx => ResetScene();
         inputActions.Player.Interact.performed -= ctx => TryInteract();
         inputActions.Player.Disable();
@@ -103,6 +131,26 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log($"Mana: {currentMana}/{maxMana}");
+
+        if (inputPaused)
+        {
+        inputPauseTimer -= Time.deltaTime;
+            if (inputPauseTimer <= 0f)
+            {
+                inputPaused = false;
+            }
+
+        return; // Skip movement/dash input while paused
+        }
+
+        if (UIManager.Instance.IsBookOpen())
+        {
+            // Skip movement logic
+            return;
+        }
+
 
     
         if (isDashing)
@@ -114,6 +162,8 @@ public class playerController : MonoBehaviour
             ApplyGravity();
             MoveCharacter();
         }
+
+        UpdateAnimationStates(); 
     }
 
     private void ApplyGravity()
@@ -133,6 +183,15 @@ public class playerController : MonoBehaviour
         // Debug: Visualize the Raycast
         Debug.DrawRay(rayOrigin, Vector3.down * raycastDistance, isGrounded ? Color.green : Color.red);
         
+
+        //restore mana
+        if (isGrounded && currentMana < maxMana){
+            currentMana = maxMana;
+        // TODO: play VFX or sparkle sound
+        }
+        
+
+
 
         // Only reset velocity when landing, to avoid interfering with jumps
         if (isGrounded)
@@ -157,8 +216,20 @@ public class playerController : MonoBehaviour
         else if (isGliding)
         {
             velocity.y = Mathf.Lerp(velocity.y, glideGravity, Time.deltaTime * 5f);
+
             currentGlideTime -= Time.deltaTime;
-            if (currentGlideTime <= 0) StopGlide();
+            if (currentGlideTime <= 0) {
+                if (currentMana > 0)
+                {
+                    currentMana--;
+                    currentGlideTime = maxGlideTime; // recharge glide time
+                }
+                else
+                {
+                    StopGlide();
+                }
+            }
+
         }
         else
         {
@@ -172,8 +243,16 @@ public class playerController : MonoBehaviour
     
     private void StartDash()
     {
-        if (!isDashing && Time.time >= lastDashTime + dashCooldown) // Only dash if not on cooldown
+        if (UIManager.Instance.ConsumeDashSuppression()) return;
+
+        if (moveInput.magnitude < 0.1f) return;
+
+        if (!isDashing && Time.time >= lastDashTime + dashCooldown && currentMana > 0) // Only dash if not on cooldown & has mana
         {
+            currentMana--;
+            manaRegenTimer = manaRegenDelay;
+
+            animator.SetBool("isDashing", true);
             isDashing = true;
             dashTimeLeft = dashDuration;
             lastDashTime = Time.time;
@@ -181,7 +260,7 @@ public class playerController : MonoBehaviour
             // Give initial burst of speed in the movement direction
             Vector3 dashDirection = moveDirection.magnitude > 0.1f ? moveDirection : transform.forward;
             velocity = new Vector3(dashDirection.x, 0, dashDirection.z) * dashSpeed;
-            Debug.Log("Triggered");
+            //Debug.Log("Triggered");
         }
     }
 
@@ -197,6 +276,8 @@ public class playerController : MonoBehaviour
         else
         {
             isDashing = false;
+            animator.SetBool("isDashing", false);
+            isDashing = false;
             velocity = Vector3.zero;
             //velocity = Vector3.Lerp(velocity, Vector3.zero, Time.deltaTime * 20f);
         }
@@ -205,7 +286,7 @@ public class playerController : MonoBehaviour
 
     private void StartGlide()
     {
-        if (!isGrounded) // Only allow gliding if player is airborne
+        if (!isGrounded && currentMana > 0) // Only allow gliding if player is airborne
         {
             isGliding = true;
             currentGlideTime = maxGlideTime; // Reset glide time
@@ -224,11 +305,13 @@ public class playerController : MonoBehaviour
     
     private void Jump()
     {
-        if (isGrounded || coyoteTimeCounter > 0f)
+        if ((isGrounded || coyoteTimeCounter > 0f) && currentMana > 0)
         {
-            //physics based jump calculation:
+            currentMana--;
+            manaRegenTimer = manaRegenDelay;
+
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            coyoteTimeCounter = 0f; // Reset coyote time after jumping
+            coyoteTimeCounter = 0f;
         }
     }
 
@@ -313,17 +396,31 @@ private void TryInteract()
     if (inDialogue)
     {
         AdvanceDialogue(); // Progress dialogue if already talking
+        return;
     }
 
-    else if (canInteract && nearbyPickup != null)
+    if (canInteract && nearbyPickup != null)
     {
-        CollectMushroom(nearbyPickup);
+        MushroomPickup pickup = nearbyPickup.GetComponent<MushroomPickup>();
+        if (pickup != null)
+        {
+            pickup.Collect(this);
+        }
+
+        nearbyPickup = null;
+        canInteract = false;
+        if (interactionPrompt != null)
+            interactionPrompt.SetActive(false);
+
+        return;
     }
-    
-    else if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
+
+    if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
     {
         StartDialogue(nearbyNPC.dialogueLines.ToArray());
     }
+
+
 }
 
 
@@ -386,6 +483,87 @@ private void TryInteract()
     private void ResetScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+
+    private void UpdateAnimationStates(){
+   
+    Vector3 scale = spriteTransform.localScale;
+
+        if (moveInput.x > 0.1f)
+            {
+                scale.x = Mathf.Abs(scale.x); // face right
+            }
+        else if (moveInput.x < -0.1f)
+            {
+                scale.x = -Mathf.Abs(scale.x); // face left
+            }
+
+        spriteTransform.localScale = scale;
+
+        // Check if player is moving
+        bool isMoving = moveInput.magnitude > 0.1f;
+
+        // Determine vertical motion states
+        bool isJumpingUp = !isGrounded && velocity.y > 0.1f;
+        bool isFalling = !isGrounded && velocity.y < -0.1f;
+
+        // Allow walk/idle only when grounded and not in special states
+        bool groundedMovementAllowed = isGrounded && !isJumpingUp && !isGliding && !isDashing;
+
+        // Set animation booleans
+        animator.SetBool("isJumping", isJumpingUp);
+        animator.SetBool("isFalling", isFalling && !isGliding && !isDashing);
+        animator.SetBool("isGliding", isGliding);
+        animator.SetBool("isDashing", isDashing);
+        animator.SetBool("isWalking", groundedMovementAllowed && isMoving);
+
+
+    }
+
+
+
+
+    public void ModifyJumpHeight(float amount)
+    {
+        jumpHeight = Mathf.Max(0.5f, jumpHeight + amount);
+    }
+
+
+
+    public void ModifyDashSpeed(float amount)
+    {
+        dashSpeed = Mathf.Max(1f, dashSpeed + amount);
+    }
+
+
+    public void ModifyGlideControl(float amount){
+        maxGlideTime += amount; 
+    }
+
+    public void ModifyClimbStrength(float amount){
+        
+    }
+
+
+    private void OnOpenBook(InputAction.CallbackContext context)
+    {
+        UIManager.Instance?.ToggleMushroomBook();
+
+        if (!UIManager.Instance.IsBookOpen()) // if just closed
+        {
+            inputPaused = true;
+            inputPauseTimer = inputPauseDuration;
+        }
+    } 
+
+    private void OnEnterScene(InputAction.CallbackContext context)
+    {
+        if (isPlayerInRange)
+        {
+            UIManager.Instance.HideInteractionPrompt();
+            SceneManager.LoadScene(NextScene);
+        }
     }
 
 
