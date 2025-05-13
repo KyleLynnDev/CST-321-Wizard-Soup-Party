@@ -91,11 +91,26 @@ public class playerController : MonoBehaviour
     [SerializeField] private float manaRegenDelay = 0.5f;
     private float manaRegenTimer = 0f;
 
+    [Header("Multi-Jump Settings")]
+    [SerializeField] private int maxExtraJumps = 0; // how many extra jumps you have unlocked
+    private int jumpsLeft = 0;
+
+
+
+
+    
+
     private void Awake()
     {
         inputActions = new PlayerInputActions();
         animator = GetComponentInChildren<Animator>(); // the animator is in visual, a child of player
         currentMana = maxMana;
+  
+    }
+
+    private void Start(){
+        UIManager.Instance.SetupManaUI(maxMana);
+        UIManager.Instance.UpdateManaUI(currentMana); 
     }
 
     private void OnEnable()
@@ -187,6 +202,7 @@ public class playerController : MonoBehaviour
         //restore mana
         if (isGrounded && currentMana < maxMana){
             currentMana = maxMana;
+            UIManager.Instance.UpdateManaUI(currentMana);
         // TODO: play VFX or sparkle sound
         }
         
@@ -223,6 +239,7 @@ public class playerController : MonoBehaviour
                 {
                     currentMana--;
                     currentGlideTime = maxGlideTime; // recharge glide time
+                    UIManager.Instance.UpdateManaUI(currentMana);
                 }
                 else
                 {
@@ -250,6 +267,7 @@ public class playerController : MonoBehaviour
         if (!isDashing && Time.time >= lastDashTime + dashCooldown && currentMana > 0) // Only dash if not on cooldown & has mana
         {
             currentMana--;
+            UIManager.Instance.UpdateManaUI(currentMana);
             manaRegenTimer = manaRegenDelay;
 
             animator.SetBool("isDashing", true);
@@ -308,6 +326,7 @@ public class playerController : MonoBehaviour
         if ((isGrounded || coyoteTimeCounter > 0f) && currentMana > 0)
         {
             currentMana--;
+            UIManager.Instance.UpdateManaUI(currentMana);
             manaRegenTimer = manaRegenDelay;
 
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -526,23 +545,30 @@ private void TryInteract()
 
     public void ModifyJumpHeight(float amount)
     {
-        jumpHeight = Mathf.Max(0.5f, jumpHeight + amount);
+        UIManager.Instance.ShowUpgradePopup($" +{amount} Jump");
+        jumpHeight = Mathf.Clamp(jumpHeight + amount, 1f, 5f);
     }
 
 
 
     public void ModifyDashSpeed(float amount)
     {
+        UIManager.Instance.ShowUpgradePopup($" +{amount} Dash");
         dashSpeed = Mathf.Max(1f, dashSpeed + amount);
     }
 
 
     public void ModifyGlideControl(float amount){
-        maxGlideTime += amount; 
+        UIManager.Instance.ShowUpgradePopup($" +{amount} Glide");
+        maxGlideTime = Mathf.Clamp(maxGlideTime + amount, 0.5f, 5f);
     }
 
-    public void ModifyClimbStrength(float amount){
-        
+    public void ModifyManaStrength(float amount){
+        UIManager.Instance.ShowUpgradePopup($" +{amount} Mana");
+        maxMana = (int)Mathf.Max(1f, maxMana + amount); // increase or decrease maxMana
+        currentMana = maxMana; // fully refill
+        UIManager.Instance.SetupManaUI(maxMana); // create new star objects
+        UIManager.Instance.UpdateManaUI(currentMana); //visual update
     }
 
 
@@ -561,10 +587,12 @@ private void TryInteract()
     {
         if (isPlayerInRange)
         {
+            
             UIManager.Instance.HideInteractionPrompt();
             SceneManager.LoadScene(NextScene);
         }
     }
+
 
 
 

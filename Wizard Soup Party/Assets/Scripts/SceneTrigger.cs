@@ -18,6 +18,7 @@ public class SceneTrigger : MonoBehaviour
                 
                 controller.NextScene = sceneToLoad;
                 controller.isPlayerInRange = true;
+                UIManager.Instance.interactionPromptText.text = "Press B to enter"; 
                 UIManager.Instance?.ShowInteractionPrompt("Press B to enter");
             }
         }
@@ -33,6 +34,7 @@ public class SceneTrigger : MonoBehaviour
             {
                 controller.NextScene = null;
                 controller.isPlayerInRange = false;
+                UIManager.Instance.interactionPromptText.text = "Press B to interact"; 
                 UIManager.Instance?.HideInteractionPrompt();
             }
         }
