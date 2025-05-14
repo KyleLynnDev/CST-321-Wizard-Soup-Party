@@ -95,10 +95,12 @@ public class playerController : MonoBehaviour
     [SerializeField] private int maxExtraJumps = 0; // how many extra jumps you have unlocked
     private int jumpsLeft = 0;
 
+    [SerializeField] private ParticleSystem movementParticles;
 
+    [SerializeField] private float hangGravityMultiplier = 0.2f;
+    [SerializeField] private float hangTimeDuration = 0.15f;
+    private float hangTimeCounter = 0f;
 
-
-    
 
     private void Awake()
     {
@@ -147,7 +149,7 @@ public class playerController : MonoBehaviour
     void Update()
     {
 
-        Debug.Log($"Mana: {currentMana}/{maxMana}");
+        //Debug.Log($"Mana: {currentMana}/{maxMana}");
 
         if (inputPaused)
         {
@@ -179,6 +181,20 @@ public class playerController : MonoBehaviour
         }
 
         UpdateAnimationStates(); 
+
+
+        bool isWalking = isGrounded && moveDirection.magnitude > 0.1f;
+
+        if (!isWalking)
+        {
+            if (!movementParticles.isPlaying)
+                movementParticles.Play();
+        }
+        else
+        {
+            if (movementParticles.isPlaying)
+                movementParticles.Stop();
+        }
     }
 
     private void ApplyGravity()
@@ -213,23 +229,37 @@ public class playerController : MonoBehaviour
         if (isGrounded)
         {
             coyoteTimeCounter = coyoteTime; // Reset coyote time
-            if (!wasGrounded) 
-            {
-                velocity.y = -2f; // Keep player on ground only when landing
-            }
+            jumpsLeft = maxExtraJumps; 
             isGliding = false; // Stop gliding when landing
+            hangTimeCounter = hangTimeDuration;
+           
         }
         else
         {
             coyoteTimeCounter -= Time.deltaTime; // Reduce coyote time if in the air
+
+            
+            if (hangTimeCounter > 0)
+            {
+                hangTimeCounter -= Time.deltaTime;
+                velocity.y += gravity * hangGravityMultiplier * Time.deltaTime;
+            }
+            else
+            {
+                velocity.y += gravity * Time.deltaTime;
+            }
+
         }
 
+
+
         // If jumping, prevent gravity from instantly applying full force
-        if (velocity.y > 0) 
-        {
-            velocity.y += (gravity * 0.5f) * Time.deltaTime; // Reduce gravity effect when going up
-        }
-        else if (isGliding)
+        //if (velocity.y >= 0) 
+        //{
+        //    velocity.y += (gravity * 0.5f) * Time.deltaTime; // Reduce gravity effect when going up
+        //}
+
+        if (isGliding)
         {
             velocity.y = Mathf.Lerp(velocity.y, glideGravity, Time.deltaTime * 5f);
 
@@ -250,7 +280,7 @@ public class playerController : MonoBehaviour
         }
         else
         {
-            velocity.y += gravity * Time.deltaTime; // Apply normal gravity
+        //    velocity.y += gravity * Time.deltaTime; // Apply normal gravity
         }
         
         characterController.Move(velocity * Time.deltaTime);
@@ -285,7 +315,7 @@ public class playerController : MonoBehaviour
 
     private void DashMovement()
     {
-        Debug.Log("Dashing...");
+        //Debug.Log("Dashing...");
         if (dashTimeLeft > 0)
         {
             characterController.Move(velocity * Time.deltaTime);
@@ -323,15 +353,34 @@ public class playerController : MonoBehaviour
     
     private void Jump()
     {
-        if ((isGrounded || coyoteTimeCounter > 0f) && currentMana > 0)
+        bool canJumpFromGround = isGrounded || coyoteTimeCounter > 0f;
+        bool canMidAirJump = !isGrounded && jumpsLeft > 0;
+
+        if ((canJumpFromGround || canMidAirJump) && currentMana > 0)
         {
+            //Debug.Log(canJumpFromGround ? "Ground Jump" : "Midair Jump"); // <-- NEW
+
             currentMana--;
             UIManager.Instance.UpdateManaUI(currentMana);
             manaRegenTimer = manaRegenDelay;
 
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            coyoteTimeCounter = 0f;
+
+            if (canMidAirJump) {
+                jumpsLeft--;
+                //Debug.Log($"Used extra jump. Jumps left: {jumpsLeft}");
+            }
+            
+
+            if (canJumpFromGround)
+                coyoteTimeCounter = 0f;
         }
+        else
+        {
+            //Debug.Log($"Jump blocked: grounded={isGrounded}, coyoteTime={coyoteTimeCounter}, jumpsLeft={jumpsLeft}, mana={currentMana}");
+        }
+    
+
     }
 
     
@@ -420,18 +469,21 @@ private void TryInteract()
 
     if (canInteract && nearbyPickup != null)
     {
-        MushroomPickup pickup = nearbyPickup.GetComponent<MushroomPickup>();
+        PickupItem pickup = nearbyPickup.GetComponent<PickupItem>();
         if (pickup != null)
         {
-            pickup.Collect(this);
+            if (pickup.pickupType == PickupType.Mushroom)
+                pickup.CollectMushroom(this);
+            else if (pickup.pickupType == PickupType.Ingredient)
+                pickup.CollectIngredient();
+
+            nearbyPickup = null;
+            canInteract = false;
+            if (interactionPrompt != null)
+                interactionPrompt.SetActive(false);
+
+            return;
         }
-
-        nearbyPickup = null;
-        canInteract = false;
-        if (interactionPrompt != null)
-            interactionPrompt.SetActive(false);
-
-        return;
     }
 
     if (nearbyNPC != null && nearbyNPC.IsPlayerInRange())
@@ -448,17 +500,17 @@ private void TryInteract()
     private void CollectMushroom(GameObject mushroom)
     {
     // Optional: play sound, spawn effect, etc.
-    jumpHeight += 0.5f; // Upgrade logic: boost jump height
+    //jumpHeight += 0.5f; // Upgrade logic: boost jump height
 
 
-    if (interactionPrompt != null)
-        interactionPrompt.SetActive(false); 
+    //if (interactionPrompt != null)
+    //    interactionPrompt.SetActive(false); 
         
 
 
-    Destroy(mushroom);  // Remove mushroom from the scene
+    //Destroy(mushroom);  // Remove mushroom from the scene
 
-    Debug.Log("Mushroom collected! Jump upgraded.");
+    //Debug.Log("Mushroom collected! Jump upgraded.");
     }
 
     private void ShowDialogue(string text)
@@ -569,6 +621,14 @@ private void TryInteract()
         currentMana = maxMana; // fully refill
         UIManager.Instance.SetupManaUI(maxMana); // create new star objects
         UIManager.Instance.UpdateManaUI(currentMana); //visual update
+    }
+
+
+    public void ModifyJumpCount(int amount)
+    {
+        maxExtraJumps = Mathf.Max(0, maxExtraJumps + amount);
+        jumpsLeft = maxExtraJumps;
+        UIManager.Instance.ShowUpgradePopup($"+{amount} Extra Jump");
     }
 
 

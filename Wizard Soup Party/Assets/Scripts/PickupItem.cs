@@ -1,14 +1,36 @@
 using UnityEngine;
 
+
+public enum PickupType { Mushroom, Ingredient}
+
 public enum MushroomType { JumpHeight, JumpNumber, Dash, Glide, Mana }
 
-public class MushroomPickup : MonoBehaviour
+
+
+public class PickupItem : MonoBehaviour
 {
     public MushroomType type;
     public bool isSafe = true;
     public float powerAmount = 0.5f;
 
-    public void Collect(playerController player)
+    [Header("Mushroom Properties")]
+    public MushroomType mushroomType;
+
+    [Header("Ingredient Properties")]
+    public string ingredientName;
+
+    public PickupType pickupType = PickupType.Mushroom;
+
+
+    public void CollectIngredient()
+    {
+        GameData.Instance.CollectIngredient(ingredientName);
+        UIManager.Instance.ShowUpgradePopup($"{ingredientName} Acquired!");
+        Destroy(gameObject);
+    }
+
+
+    public void CollectMushroom(playerController player)
     {
         switch (type)
         {
@@ -16,7 +38,7 @@ public class MushroomPickup : MonoBehaviour
                 player.ModifyJumpHeight(isSafe ? powerAmount : -powerAmount);
                 break;
             case MushroomType.JumpNumber:
-                //add double jump stuff here 
+                player.ModifyJumpCount(isSafe ? 1 : -1);
                 break;
             case MushroomType.Dash:
                 player.ModifyDashSpeed(isSafe ? powerAmount : -powerAmount);
@@ -34,4 +56,6 @@ public class MushroomPickup : MonoBehaviour
         // TODO: play sound, VFX
         Destroy(gameObject);
     }
+
+
 }
