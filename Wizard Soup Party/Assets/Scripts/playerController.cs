@@ -24,10 +24,10 @@ public class playerController : MonoBehaviour
     [Header("Jump Settings")]
     public float jumpHeight = 2.5f;
     public float gravity = -9.81f;
-    public float groundCheckDistance = 0.2f;
+    public float groundCheckDistance = 1.0f;
 
     private Vector3 velocity;
-    private bool isGrounded; 
+    public bool isGrounded; 
     
     //Gliding
     [Header("Gliding Settings")] 
@@ -209,7 +209,7 @@ public class playerController : MonoBehaviour
         
         // Combine both checks
         bool wasGrounded = isGrounded;
-        isGrounded = controllerGrounded || raycastGrounded;
+        isGrounded = controllerGrounded || raycastGrounded; //TODO: figure out why using a raycast here breaks everything wtf 
         
         // Debug: Visualize the Raycast
         Debug.DrawRay(rayOrigin, Vector3.down * raycastDistance, isGrounded ? Color.green : Color.red);

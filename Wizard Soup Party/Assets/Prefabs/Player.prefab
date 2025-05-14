@@ -353,6 +353,15 @@ MonoBehaviour:
   interactionPrompt: {fileID: 0}
   dialoguePanel: {fileID: 0}
   dialogueTextUI: {fileID: 0}
+  spriteTransform: {fileID: 0}
+  isPlayerInRange: 0
+  NextScene: 
+  maxMana: 3
+  manaRegenDelay: 0.5
+  maxExtraJumps: 0
+  movementParticles: {fileID: 0}
+  hangGravityMultiplier: 0.2
+  hangTimeDuration: 0.15
 --- !u!114 &4422780429697096052
 MonoBehaviour:
   m_ObjectHideFlags: 0
